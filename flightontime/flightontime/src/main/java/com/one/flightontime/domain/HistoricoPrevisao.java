@@ -2,6 +2,7 @@ package com.one.flightontime.domain;
 
 import com.one.flightontime.domain.enums.StatusPredicao;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,21 +22,42 @@ public class HistoricoPrevisao {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idHistorico;
 
+    @NotBlank
+    @Column(name = "codCompanhia",nullable = false,length = 3)
+    @Pattern(regexp = "^[A-Za-z]{3}$")
+    @Size(min = 3,max = 3,message = "A sigla deve conter 3 caracteres")
     private String codCompanhia;
 
+    @NotBlank
+    @Pattern(regexp = "^[A-Za-z]{4}$")
+    @Size(min = 4,max = 4,message = "A sigla deve conter 4 caracteres")
+    @Column(name = "codAeroportoOrigem",nullable = false,length = 4)
     private String codAeroportoOrigem;
 
+    @NotBlank
+    @Pattern(regexp = "^[A-Za-z]{4}$")
+    @Size(min = 4,max = 4,message = "A sigla deve conter 4 caracteres")
+    @Column(name = "codAeroportoDestino",nullable = false,length = 4)
     private String codAeroportoDestino;
 
+    @NotNull
+    @Column(name = "dataHoraPartida")
     private LocalDateTime dataHoraPartida;
 
+    @Positive(message = "A distância não pode ser negativa!")
+    @Column(name = "distanciaKm")
+    @NotNull
     private Double distanciaKm;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "statusPredicao")
     private StatusPredicao statusPredicao;
 
+    @Column(name = "probabilidade")
+    @NotNull
     private Double probabilidade;
 
+    @Column(name = "dataConsulta")
     private LocalDateTime dataConsulta;
 
     @PrePersist
