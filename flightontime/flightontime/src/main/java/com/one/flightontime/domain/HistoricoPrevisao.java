@@ -46,7 +46,6 @@ public class HistoricoPrevisao {
 
     @Positive(message = "A distância não pode ser negativa!")
     @Column(name = "distanciaKm")
-    @NotNull
     private Double distanciaKm;
 
     @Enumerated(EnumType.STRING)

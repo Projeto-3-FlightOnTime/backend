@@ -15,7 +15,7 @@ public record PredictionResponse (
 
     @NotNull(message = "Probabilidade obrigatória")
     @JsonProperty("probabilidade")
-    Number probabilidade,
+    Double probabilidade,
 
     @JsonProperty("messagem")
     String messagem

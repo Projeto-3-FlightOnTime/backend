@@ -11,4 +11,5 @@ public interface DsClient {
 
     @PostMapping("/predict")
     PredictionResponse predict(@RequestBody PredictionRequest request);
+
 }

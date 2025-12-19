@@ -35,7 +35,6 @@ public record PredictionRequest(
         LocalDateTime dataHoraPartida,
 
         @Positive(message = "A distancia deve ser positiva")
-        @NotNull(message = "A distância é Obrigatória")
         @JsonProperty("distancia_km")
-        Integer distanciaKm
+        Double distanciaKm
 ) {}
