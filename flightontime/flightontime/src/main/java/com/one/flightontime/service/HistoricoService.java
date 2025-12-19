@@ -7,11 +7,13 @@ import com.one.flightontime.infra.ds.dto.PredictionRequest;
 import com.one.flightontime.infra.ds.dto.PredictionResponse;
 import com.one.flightontime.repository.HistoricoRepository;
 import com.one.flightontime.service.validations.ValidationPrediction;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+
 public class HistoricoService {
 
     private final DsClient dsClient;
