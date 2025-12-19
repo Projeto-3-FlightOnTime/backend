@@ -1,4 +1,10 @@
 package com.one.flightontime.repository;
 
-public interface RepositoryHistorico {
+import com.one.flightontime.domain.HistoricoPrevisao;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface RepositoryHistorico extends JpaRepository<HistoricoPrevisao,Long> {
+
 }
