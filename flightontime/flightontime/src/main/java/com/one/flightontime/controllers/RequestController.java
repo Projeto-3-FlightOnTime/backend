@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/Prediction")
+@RequestMapping("/predict")
 public class RequestController {
 
     private final HistoricoService historicoService;
