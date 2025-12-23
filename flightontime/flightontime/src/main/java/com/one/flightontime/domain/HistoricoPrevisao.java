@@ -7,8 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Getter
 @Setter
@@ -42,7 +42,7 @@ public class HistoricoPrevisao {
 
     @NotNull
     @Column(name = "dataHoraPartida")
-    private LocalDateTime dataHoraPartida;
+    private OffsetDateTime dataHoraPartida;
 
     @Positive(message = "A distância não pode ser negativa!")
     @Column(name = "distanciaKm")
