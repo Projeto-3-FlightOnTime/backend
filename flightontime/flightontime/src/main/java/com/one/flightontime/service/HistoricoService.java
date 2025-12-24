@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Locale;
+
 @Service
 @RequiredArgsConstructor
 
@@ -37,15 +39,18 @@ public class HistoricoService {
         historico.setCodAeroportoOrigem(request.codAeroportoOrigem());
         historico.setCodAeroportoDestino(request.codAeroportoDestino());
         historico.setDataHoraPartida(request.dataHoraPartida());
-        historico.setDistanciaKm(request.distanciaKm().doubleValue());
+        historico.setDistanciaKm(request.distanciaKm());
         historico.setStatusPredicao(status);
-        historico.setProbabilidade(response.probabilidade().doubleValue());
+        historico.setProbabilidade(response.probabilidade());
 
         repository.save(historico);
 
         return PredictionResponse.builder()
                 .status_predicao(status.name())
-                .probabilidade(response.probabilidade())
+                .probabilidade(Double.parseDouble(String.format(
+                        Locale.US,
+                        "%.2f",
+                        historico.getProbabilidade() * 100)))
                 .messagem("Predição realizada com sucesso")
                 .build();
     }
