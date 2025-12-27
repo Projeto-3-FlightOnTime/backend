@@ -44,9 +44,9 @@ public class HistoricoPrevisao {
     @Column(name = "dataHoraPartida")
     private OffsetDateTime dataHoraPartida;
 
-    @Positive(message = "A distância não pode ser negativa!")
-    @Column(name = "distanciaKm")
-    private Double distanciaKm;
+//    @Positive(message = "A distância não pode ser negativa!")
+//    @Column(name = "distanciaKm")
+//    private Double distanciaKm;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "statusPredicao")
