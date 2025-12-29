@@ -7,7 +7,6 @@ import com.one.flightontime.infra.exceptions.OrigemDestinoException;
 import com.one.flightontime.service.CatalogoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
 import java.time.OffsetDateTime;
 
 @Component
@@ -33,7 +32,7 @@ public class ValidationPrediction {
            throw new OrigemDestinoException("O aeroporto de origem não pode ser igual ao de destino");
         }
 
-        if(aeroporto1.dataHoraPartida().isBefore(OffsetDateTime.now().minusMinutes(1))){
+        if(aeroporto1.dataHoraPartida().isBefore(OffsetDateTime.now())){
             throw new DataHoraPartidaInvalidaException("A data e hora de partida não pode estar no passado");
         }
 

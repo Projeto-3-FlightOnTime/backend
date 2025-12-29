@@ -30,8 +30,4 @@ public record PredictionRequest(
         @NotNull(message = "A data é obrigatória")
         @JsonProperty("data_hora_partida")
         OffsetDateTime dataHoraPartida
-
-//        @Positive(message = "A distancia deve ser positiva")
-//        @JsonProperty("distancia_km")
-//        Double distanciaKm
 ) {}
