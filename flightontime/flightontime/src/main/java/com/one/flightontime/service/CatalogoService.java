@@ -2,7 +2,6 @@ package com.one.flightontime.service;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
-
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
