@@ -1,5 +1,6 @@
 package com.one.flightontime.infra.ds.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
@@ -26,12 +27,9 @@ public record PredictionRequest(
         @JsonProperty("cod_aeroporto_destino")
         String codAeroportoDestino,
 
-        @Future(message = "A data deve ser no futuro")
+        @FutureOrPresent(message = "A data deve ser no futuro")
         @NotNull(message = "A data é obrigatória")
         @JsonProperty("data_hora_partida")
-        OffsetDateTime dataHoraPartida,
-
-        @Positive(message = "A distancia deve ser positiva")
-        @JsonProperty("distancia_km")
-        Double distanciaKm
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSX")
+        OffsetDateTime dataHoraPartida
 ) {}
