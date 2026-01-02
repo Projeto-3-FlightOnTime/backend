@@ -6,7 +6,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "dsClient", url = "http://127.0.0.1:8000") //falta definir o endereço no applicatio.properties
+@FeignClient(name = "dsClient", url = "http://127.0.0.1:8000")
 public interface DsClient {
 
     @PostMapping("/predict")

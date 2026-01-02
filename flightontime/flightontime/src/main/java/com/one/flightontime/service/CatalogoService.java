@@ -1,6 +1,7 @@
 package com.one.flightontime.service;
 
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -9,6 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Service
+@Slf4j
 public class CatalogoService {
 
     private final Set<String> companhias = new HashSet<>();
@@ -17,7 +19,9 @@ public class CatalogoService {
     @PostConstruct
     public void carregarCatalogos() {
         carregarArquivo("catalogos/companhias.txt", companhias);
+        log.info("Companhias carregadas");
         carregarArquivo("catalogos/aeroportos.txt", aeroportos);
+        log.info("Aeroportos carregados");
     }
 
     private void carregarArquivo(String caminho, Set<String> destino) {
