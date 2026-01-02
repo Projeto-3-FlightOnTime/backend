@@ -21,10 +21,15 @@ public class HistoricoService {
     private final ValidationPrediction validation;
 
     public PredictionResponse prediction(PredictionRequest request) {
+        log.debug("Predição recebida para companhia {} de {} para {} em {}", request.codCompanhia(),
+                request.codAeroportoOrigem(), request.codAeroportoDestino(), request.dataHoraPartida());
         validation.validation(request);
+        log.info("Request de predição validado com sucesso");
         PredictionResponse response;
 
         response = dsClient.predict(request);
+        log.debug("Response carregado com sucesso do DS: status - {}, probabilidade - {}",
+                response.status_predicao(), response.probabilidade());
 
         StatusPredicao status = StatusPredicao.valueOf(response.status_predicao().toUpperCase());
 
@@ -37,6 +42,7 @@ public class HistoricoService {
         historico.setProbabilidade(response.probabilidade());
 
         repository.save(historico);
+        log.info("Histórico de predição salvo com sucesso: {}", historico.getIdHistorico());
 
         return PredictionResponse.builder()
                 .status_predicao(status.name())
