@@ -50,7 +50,7 @@ public class HistoricoService {
     }
 
     private StatusPredicao pontualOrAtrasado(Double probabilidade){
-        return probabilidade <= 45 ? StatusPredicao.PONTUAL : StatusPredicao.ATRASADO;
+        return probabilidade <= 0.30 ? StatusPredicao.PONTUAL : StatusPredicao.ATRASADO;
     }
 
     private HistoricoPrevisao criarHistorico(PredictionRequest request, StatusPredicao status, Double probabilidade) {
