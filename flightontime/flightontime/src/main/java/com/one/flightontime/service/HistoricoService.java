@@ -28,25 +28,19 @@ public class HistoricoService {
         PredictionResponse response;
 
         response = dsClient.predict(request);
+        Double probabilidade = response.probabilidade();
         log.debug("Response carregado com sucesso do DS: status - {}, probabilidade - {}",
-                response.status_predicao(), response.probabilidade());
+                response.status_predicao(), probabilidade);
+        probabilidade = formatarProbabilidade(probabilidade);
+        StatusPredicao status = pontualOrAtrasado(probabilidade);
 
-        StatusPredicao status = StatusPredicao.valueOf(response.status_predicao().toUpperCase());
-
-        HistoricoPrevisao historico = new HistoricoPrevisao();
-        historico.setCodCompanhia(request.codCompanhia());
-        historico.setCodAeroportoOrigem(request.codAeroportoOrigem());
-        historico.setCodAeroportoDestino(request.codAeroportoDestino());
-        historico.setDataHoraPartida(request.dataHoraPartida());
-        historico.setStatusPredicao(status);
-        historico.setProbabilidade(response.probabilidade());
-
+        HistoricoPrevisao historico = criarHistorico(request, status, probabilidade);
         repository.save(historico);
         log.info("Histórico de predição salvo com sucesso: {}", historico.getIdHistorico());
 
         return PredictionResponse.builder()
                 .status_predicao(status.name())
-                .probabilidade(formatarProbabilidade(response.probabilidade()))
+                .probabilidade(probabilidade)
                 .messagem("Predição realizada com sucesso")
                 .build();
     }
@@ -55,4 +49,18 @@ public class HistoricoService {
         return Math.round(probabilidade * 100.0) / 100.0;
     }
 
+    private StatusPredicao pontualOrAtrasado(Double probabilidade){
+        return probabilidade <= 45 ? StatusPredicao.PONTUAL : StatusPredicao.ATRASADO;
+    }
+
+    private HistoricoPrevisao criarHistorico(PredictionRequest request, StatusPredicao status, Double probabilidade) {
+        HistoricoPrevisao historico = new HistoricoPrevisao();
+        historico.setCodCompanhia(request.codCompanhia());
+        historico.setCodAeroportoOrigem(request.codAeroportoOrigem());
+        historico.setCodAeroportoDestino(request.codAeroportoDestino());
+        historico.setDataHoraPartida(request.dataHoraPartida());
+        historico.setStatusPredicao(status);
+        historico.setProbabilidade(probabilidade);
+        return historico;
+    }
 }
