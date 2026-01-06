@@ -7,8 +7,6 @@ import lombok.Builder;
 
 @Builder
 public record PredictionResponse (
-    //ESSES CAMPOS DEVEM SER IGUAIS AOS RETORNADOS DO DS. VAMOS TER QUE AGUARDAR A EQUIDE DE DS.
-
     @NotBlank(message = "Campo Obrigatório")
     @JsonProperty("status_predicao")
     String status_predicao,
@@ -17,6 +15,6 @@ public record PredictionResponse (
     @JsonProperty("probabilidade")
     Double probabilidade,
 
-    @JsonProperty("messagem")
-    String messagem
+    @JsonProperty("mensagem")
+    String mensagem
 ) {}
