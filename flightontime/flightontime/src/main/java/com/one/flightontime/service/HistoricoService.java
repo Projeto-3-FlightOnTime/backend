@@ -31,7 +31,7 @@ public class HistoricoService {
         Double probabilidade = response.probabilidade();
         log.debug("Response carregado com sucesso do DS: status - {}, probabilidade - {}",
                 response.status_predicao(), probabilidade);
-        probabilidade = formatarProbabilidade(probabilidade);
+        probabilidade = arredondarProbabilidade(probabilidade);
         StatusPredicao status = pontualOrAtrasado(probabilidade);
 
         HistoricoPrevisao historico = criarHistorico(request, status, probabilidade);
@@ -45,12 +45,12 @@ public class HistoricoService {
                 .build();
     }
 
-    private Double formatarProbabilidade(Double probabilidade) {
+    private Double arredondarProbabilidade(Double probabilidade) {
         return Math.round(probabilidade * 100.0) / 100.0;
     }
 
     private StatusPredicao pontualOrAtrasado(Double probabilidade){
-        return probabilidade <= 0.30 ? StatusPredicao.PONTUAL : StatusPredicao.ATRASADO;
+        return probabilidade >= 0.40 ? StatusPredicao.ATRASADO : StatusPredicao.PONTUAL;
     }
 
     private HistoricoPrevisao criarHistorico(PredictionRequest request, StatusPredicao status, Double probabilidade) {
