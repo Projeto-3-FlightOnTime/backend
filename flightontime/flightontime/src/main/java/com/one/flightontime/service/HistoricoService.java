@@ -41,7 +41,7 @@ public class HistoricoService {
         return PredictionResponse.builder()
                 .status_predicao(status.name())
                 .probabilidade(probabilidade)
-                .messagem("Predição realizada com sucesso")
+                .mensagem("Predição realizada com sucesso")
                 .build();
     }
 
