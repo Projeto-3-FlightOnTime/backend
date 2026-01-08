@@ -38,7 +38,7 @@ public class RequestController {
             @ApiResponse(responseCode = "500", description = "Erro de comunicação com o serviço Python")
     })
     @PostMapping
-    public ResponseEntity<@NonNull PredictionResponse> receberDadosApi(@RequestBody @Valid PredictionRequest dados){
+    public ResponseEntity<@NonNull PredictionResponse> receberDadosApi(@Valid @RequestBody PredictionRequest dados){
         PredictionResponse enviarDados = historicoService.prediction(dados);
         log.debug("Dados recebidos na API: companhia {}, origem {}, destino {}, data-hora {}",
                 dados.codCompanhia(), dados.codAeroportoOrigem(), dados.codAeroportoDestino(), dados.dataHoraPartida()

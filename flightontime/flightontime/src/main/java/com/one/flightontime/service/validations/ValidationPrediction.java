@@ -39,11 +39,6 @@ public class ValidationPrediction {
         }
         log.info("Aeroporto de origem e destino são diferentes");
 
-        if(aeroporto1.dataHoraPartida().isBefore(OffsetDateTime.now())){
-            throw new DataHoraPartidaInvalidaException("A data e hora de partida não pode estar no passado");
-        }
-        log.info("Data e hora de partida validada com sucesso: {}", aeroporto1.dataHoraPartida());
-
         if(aeroporto1.dataHoraPartida().isAfter(OffsetDateTime.now().plusDays(365))){
             throw new DataHoraPartidaInvalidaException(
                     "A data e hora de partida não pode ser maior que um ano a partir da data atual"

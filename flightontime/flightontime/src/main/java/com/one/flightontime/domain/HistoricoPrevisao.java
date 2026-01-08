@@ -42,6 +42,7 @@ public class HistoricoPrevisao {
 
     @NotNull
     @Column(name = "dataHoraPartida")
+    @Future
     private OffsetDateTime dataHoraPartida;
 
     @Enumerated(EnumType.STRING)
