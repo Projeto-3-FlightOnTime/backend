@@ -11,6 +11,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -19,6 +22,7 @@ public class HistoricoService {
     private final DsClient dsClient;
     private final HistoricoRepository repository;
     private final ValidationPrediction validation;
+    private final ExplicabilidadeService explicabilidadeService;
 
     public PredictionResponse prediction(PredictionRequest request) {
         log.debug("Predição recebida para companhia {} de {} para {} em {}", request.codCompanhia(),
@@ -28,25 +32,25 @@ public class HistoricoService {
         PredictionResponse response;
 
         response = dsClient.predict(request);
+        log.info("Probabilidade - {}", response.probabilidade());
         Double probabilidade = response.probabilidade();
-        log.debug("Response carregado com sucesso do DS: status - {}, probabilidade - {}",
-                response.status_predicao(), probabilidade);
-        probabilidade = arredondarProbabilidade(probabilidade);
+        probabilidade = formatarProbabilidade(probabilidade);
         StatusPredicao status = pontualOrAtrasado(probabilidade);
+        log.info("Probabilidade - {}, Status - {}", probabilidade, status);
 
         HistoricoPrevisao historico = criarHistorico(request, status, probabilidade);
         repository.save(historico);
         log.info("Histórico de predição salvo com sucesso: {}", historico.getIdHistorico());
+        log.debug("Data hora partida: {}", request.dataHoraPartida());
 
-        return PredictionResponse.builder()
-                .status_predicao(status.name())
-                .probabilidade(probabilidade)
-                .mensagem("Predição realizada com sucesso")
-                .build();
+        return explicabilidadeService.returnExplicabilidade(request.codAeroportoOrigem(), request.codCompanhia(),
+                request.dataHoraPartida().getHour(), status.name(), probabilidade);
     }
 
-    private Double arredondarProbabilidade(Double probabilidade) {
-        return Math.round(probabilidade * 100.0) / 100.0;
+    private Double formatarProbabilidade(Double probabilidade) {
+        return BigDecimal.valueOf(probabilidade)
+                .setScale(2, RoundingMode.DOWN)
+                .doubleValue();
     }
 
     private StatusPredicao pontualOrAtrasado(Double probabilidade){
