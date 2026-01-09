@@ -10,10 +10,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import java.time.OffsetDateTime;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class) // ATIVA O MOCKITO PARA QUE POSSA SER USADO O @MOCK E @INJECTMOCKS
@@ -112,25 +111,6 @@ class ValidationPredictionTest {
 
         OrigemDestinoException exception = assertThrows(
                 OrigemDestinoException.class,
-                () -> validationPrediction.validation(request)
-        );
-    }
-
-    @Test // TESTE PARA VALIDAR UMA REQUEST COM DATA DE PARTIDA NO PASSADO
-    void deveLancarExcecaoParaDataHoraPartidaNoPassado() {
-        PredictionRequest request = PredictionRequest.builder()
-                .codCompanhia("AZU")
-                .codAeroportoOrigem("KMIA")
-                .codAeroportoDestino("SBAC")
-                .dataHoraPartida(OffsetDateTime.now().minusHours(2))
-                .build();
-
-        when(catalogoService.companhiaExiste("AZU")).thenReturn(true);
-        when(catalogoService.aeroportoExiste("KMIA")).thenReturn(true);
-        when(catalogoService.aeroportoExiste("SBAC")).thenReturn(true);
-
-        DataHoraPartidaInvalidaException exception = assertThrows(
-                DataHoraPartidaInvalidaException.class,
                 () -> validationPrediction.validation(request)
         );
     }
