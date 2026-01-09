@@ -5,6 +5,7 @@ import com.one.flightontime.infra.ds.client.DsClient;
 import com.one.flightontime.infra.ds.dto.PredictionRequest;
 import com.one.flightontime.infra.ds.dto.PredictionResponse;
 import com.one.flightontime.repository.HistoricoRepository;
+import com.one.flightontime.service.ExplicabilidadeService;
 import feign.FeignException;
 import feign.Request;
 import org.junit.jupiter.api.MediaType;
@@ -39,27 +40,39 @@ class RequestControllerIT {
     @MockitoBean
     private HistoricoRepository repository;
 
-    @Test // TESTE PARA REALIZAR PREDIÇÃO COM SUCESSO
+    @MockitoBean
+    private ExplicabilidadeService explicabilidadeService;
+
+    @Test
     void deveRealizarPredicaoComSucesso() throws Exception {
         PredictionRequest request = request();
 
-        PredictionResponse response = PredictionResponse.builder()
+        when(dsClient.predict(any(PredictionRequest.class)))
+                .thenReturn(PredictionResponse.builder()
+                        .probabilidade(0.25)
+                        .build());
+
+        when(explicabilidadeService.returnExplicabilidade(
+                anyString(), anyString(), anyInt(), eq("PONTUAL"), eq(0.25)
+        )).thenReturn(PredictionResponse.builder()
                 .status_predicao("PONTUAL")
                 .probabilidade(0.25)
-                .build();
-
-        when(dsClient.predict(any(PredictionRequest.class))).thenReturn(response);
+                .mensagem("Predição realizada com sucesso")
+                .build());
 
         mockMvc.perform(post("/predict")
-                .contentType(String.valueOf(MediaType.APPLICATION_JSON))
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(String.valueOf(MediaType.APPLICATION_JSON))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status_predicao").value("PONTUAL"))
                 .andExpect(jsonPath("$.probabilidade").value(0.25))
-                .andExpect(jsonPath("$.mensagem").value("Predição realizada com sucesso"));
+                .andExpect(jsonPath("$.mensagem")
+                        .value("Predição realizada com sucesso"));
+
+        verify(repository).save(any(HistoricoPrevisao.class));
     }
 
-    @Test // TESTE PARA RETORNAR ERRO QUANDO A ORIGEM FOR IGUAL AO DESTINO
+    @Test
     void deveRetornarErroOrigemIgualDestino() throws Exception {
         PredictionRequest request = PredictionRequest.builder()
                 .codCompanhia("AZU")
@@ -69,111 +82,120 @@ class RequestControllerIT {
                 .build();
 
         mockMvc.perform(post("/predict")
-                .contentType(String.valueOf(MediaType.APPLICATION_JSON))
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(String.valueOf(MediaType.APPLICATION_JSON))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("O aeroporto de origem não pode ser igual ao de destino"));
+                .andExpect(jsonPath("$.message")
+                        .value("O aeroporto de origem não pode ser igual ao de destino"));
+
+        verifyNoInteractions(dsClient, explicabilidadeService, repository);
     }
 
-    @Test // TESTE PARA PERSISTIR OBJETO NO BANCO APÓS PREDIÇÃO
+    @Test
     void devePersistirObjetoNoBancoAposPredicao() throws Exception {
         PredictionRequest request = request();
 
-        PredictionResponse response = PredictionResponse.builder()
+        when(dsClient.predict(any()))
+                .thenReturn(PredictionResponse.builder()
+                        .probabilidade(0.55)
+                        .build());
+
+        when(explicabilidadeService.returnExplicabilidade(
+                anyString(), anyString(), anyInt(), eq("ATRASADO"), eq(0.55)
+        )).thenReturn(PredictionResponse.builder()
                 .status_predicao("ATRASADO")
                 .probabilidade(0.55)
-                .build();
-
-        when(dsClient.predict(any(PredictionRequest.class))).thenReturn(response);
+                .mensagem("Predição realizada com sucesso")
+                .build());
 
         mockMvc.perform(post("/predict")
-                .contentType(String.valueOf(MediaType.APPLICATION_JSON))
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(String.valueOf(MediaType.APPLICATION_JSON))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status_predicao").value("ATRASADO"))
-                .andExpect(jsonPath("$.probabilidade").value(0.55))
-                .andExpect(jsonPath("$.mensagem").value("Predição realizada com sucesso"));
+                .andExpect(jsonPath("$.probabilidade").value(0.55));
 
         verify(repository, times(1)).save(any(HistoricoPrevisao.class));
     }
 
-    @Test // TESTE PARA RETORNAR ERRO QUANDO O CLIENT FALHAR
+    @Test
     void deveRetornarErroQuandoDSFalhar() throws Exception {
         PredictionRequest request = request();
+
         FeignException ex = FeignException.errorStatus(
                 "predict",
                 feign.Response.builder()
                         .status(500)
                         .reason("Internal Server Error")
-                        .request(Request.create(Request.HttpMethod.POST, "/predict", Map.of(),
-                                null, null, null))
+                        .request(Request.create(
+                                Request.HttpMethod.POST,
+                                "/predict",
+                                Map.of(),
+                                null,
+                                null,
+                                null))
                         .build()
         );
 
-        when(dsClient.predict(any(PredictionRequest.class))).thenThrow(ex);
+        when(dsClient.predict(any())).thenThrow(ex);
 
         mockMvc.perform(post("/predict")
-                .contentType(String.valueOf(MediaType.APPLICATION_JSON))
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(String.valueOf(MediaType.APPLICATION_JSON))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isInternalServerError())
-        .andExpect(jsonPath("$.message")
-                .value("Ocorreu um erro interno no serviço de predição. Por favor, tente novamente mais tarde."));
+                .andExpect(jsonPath("$.message")
+                        .value("Ocorreu um erro interno no serviço de predição. Por favor, tente novamente mais tarde."));
+
+        verify(repository, never()).save(any());
+        verifyNoInteractions(explicabilidadeService);
     }
 
-    @Test // TESTE PARA RETORNAR ERRO QUANDO CAMPO OBRIGATÓRIO FALTAR
+    @Test
     void deveRetornarErroQuandoCampoObrigatorioFaltar() throws Exception {
-        OffsetDateTime data = dataHoraPartidaFutura();
         PredictionRequest request = PredictionRequest.builder()
                 .codCompanhia(null)
                 .codAeroportoOrigem("KMIA")
                 .codAeroportoDestino("SBGR")
-                .dataHoraPartida(data)
+                .dataHoraPartida(dataHoraPartidaFutura())
                 .build();
 
         mockMvc.perform(post("/predict")
-                .contentType(String.valueOf(MediaType.APPLICATION_JSON))
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(String.valueOf(MediaType.APPLICATION_JSON))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
 
-        verify(dsClient, never()).predict(any());
+        verifyNoInteractions(dsClient, explicabilidadeService, repository);
     }
 
-    @Test // TESTE PARA RETORNAR ERRO QUANDO DATA/HORA DE PARTIDA ESTIVER NO PASSADO
+    @Test
     void deveRetornarErroQuandoDataHoraPartidaNoPassado() throws Exception {
-        OffsetDateTime data = OffsetDateTime.parse("2025-12-25T10:00:00Z");
         PredictionRequest request = PredictionRequest.builder()
                 .codCompanhia("AZU")
                 .codAeroportoOrigem("KMIA")
                 .codAeroportoDestino("SBGR")
-                .dataHoraPartida(data)
+                .dataHoraPartida(OffsetDateTime.parse("2025-12-25T10:00:00Z"))
                 .build();
 
         mockMvc.perform(post("/predict")
-                .contentType(String.valueOf(MediaType.APPLICATION_JSON))
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(String.valueOf(MediaType.APPLICATION_JSON))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("dataHoraPartida: A data deve ser no futuro"));
+                .andExpect(jsonPath("$.message")
+                        .value("dataHoraPartida: A data deve ser no futuro"));
 
-        verify(dsClient, never()).predict(any());
+        verifyNoInteractions(dsClient, explicabilidadeService, repository);
     }
 
-    // TODO Código de companhia inválido
-
-    // TODO aeroporto inexistente
-
-    // TODO verificar se os dados foram salvos corretamente no banco
-
-    private PredictionRequest request(){
-        OffsetDateTime data = dataHoraPartidaFutura();
+    private PredictionRequest request() {
         return PredictionRequest.builder()
                 .codCompanhia("AZU")
                 .codAeroportoOrigem("KMIA")
                 .codAeroportoDestino("SBGR")
-                .dataHoraPartida(data)
+                .dataHoraPartida(dataHoraPartidaFutura())
                 .build();
     }
 
-    private OffsetDateTime dataHoraPartidaFutura(){
+    private OffsetDateTime dataHoraPartidaFutura() {
         return OffsetDateTime.parse("2026-01-30T10:00:00Z");
     }
 }
