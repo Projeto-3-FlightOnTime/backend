@@ -1,4 +1,4 @@
-package com.one.flightontime.Cors;
+package com.one.flightontime.cors;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
