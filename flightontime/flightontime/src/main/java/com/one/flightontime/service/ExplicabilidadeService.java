@@ -27,7 +27,7 @@ public class ExplicabilidadeService {
         appendIfPresent(
                 ciaMenosPontuais,
                 codCia,
-                "A companhia aérea %s está entre as menos pontuais (%.1f%% de atraso médio). ",
+                "A companhia aérea %s está entre as menos pontuais (%.1f%% de atraso médio).",
                 mensagem
         );
 
