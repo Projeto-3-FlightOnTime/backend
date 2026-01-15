@@ -10,7 +10,6 @@ import com.one.flightontime.service.validations.ValidationPrediction;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -25,8 +24,9 @@ public class HistoricoService {
     private final ExplicabilidadeService explicabilidadeService;
 
     public PredictionResponse prediction(PredictionRequest request) {
-        log.debug("Predição recebida para companhia {} de {} para {} em {}", request.codCompanhia(),
+        log.info("Predição recebida para companhia {} de {} para {} em {}", request.codCompanhia(),
                 request.codAeroportoOrigem(), request.codAeroportoDestino(), request.dataHoraPartida());
+
         validation.validation(request);
         log.info("Request de predição validado com sucesso");
         PredictionResponse response;
@@ -57,7 +57,8 @@ public class HistoricoService {
         return probabilidade >= 0.40 ? StatusPredicao.ATRASADO : StatusPredicao.PONTUAL;
     }
 
-    private HistoricoPrevisao criarHistorico(PredictionRequest request, StatusPredicao status, Double probabilidade) {
+    private HistoricoPrevisao criarHistorico(PredictionRequest request, StatusPredicao status,
+                                             Double probabilidade) {
         HistoricoPrevisao historico = new HistoricoPrevisao();
         historico.setCodCompanhia(request.codCompanhia());
         historico.setCodAeroportoOrigem(request.codAeroportoOrigem());
